@@ -51,7 +51,15 @@ if("${CMAKE_SYSTEM_NAME}" MATCHES "Darwin")
 	    "-framework IOKit" 
         "-framework Security")
 elseif("${CMAKE_SYSTEM_NAME}" MATCHES "Windows")
+    set(GLFW_INCLUDE_PATH ${ROOT_PATH}/thirdparty/windows/glfw/include)
+    set(GLAD_INCLUDE_PATH ${ROOT_PATH}/thirdparty/windows/glad/include/)
+    set(STB_INCLUDE_PATH ${ROOT_PATH}/thirdparty/windows/stb/include/)
+    set(GLM_INCLUDE_PATH ${ROOT_PATH}/thirdparty/windows/glm/include/)
 
+    set(GLFW_LIB_PATH ${ROOT_PATH}/thirdparty/windows/glfw/lib/)
+    set(GLFW_LIB ${GLFW_LIB_PATH}/glfw3.lib)
+
+    set(GLAD_SRC ${ROOT_PATH}/thirdparty/windows/glad/src/glad.c)
 endif()
 
 set(OPENGL_INCLUDE_PATH 
