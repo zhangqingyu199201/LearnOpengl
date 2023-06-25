@@ -13,13 +13,64 @@ glm::vec3 g_camera_front = glm::vec3(0, 0, -1);
 glm::vec3 g_camera_up = glm::vec3(0, 1, 0);
 glm::vec3 g_camer_pos = glm::vec3(0, 0, 3);
 
+float g_last_x = 400;
+float g_last_y = 300;
+float g_yaw = -90.0;
+float g_pitch = 0;
+float g_fov = 45;
+
 void frameSizeChange(GLFWwindow *window, int width, int height) {
     ::std::cout << "width X height = " << width << " X " << height << ::std::endl;
     glViewport(0, 0, width, height);
 }
 
+void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
+    static int firstMouse = true;
+    if (firstMouse) // 这个bool变量初始时是设定为true的
+    {
+        g_last_x = xpos;
+        g_last_y = ypos;
+        firstMouse = false;
+    }
+    
+    
+    float xoffset = xpos - g_last_x;
+    float yoffset = g_last_y - ypos; // 注意这里是相反的，因为y坐标是从底部往顶部依次增大的
+    g_last_x = xpos;
+    g_last_y = ypos;
+
+    float sensitivity = 0.5f;
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
+
+    g_yaw += xoffset;
+    g_pitch += yoffset;
+
+    if (g_pitch > 89.0f)
+        g_pitch = 89.0f;
+    if (g_pitch < -89.0f)
+        g_pitch = -89.0f;
+
+    glm::vec3 front;
+    front.x = cos(glm::radians(g_pitch)) * cos(glm::radians(g_yaw));
+    front.y = sin(glm::radians(g_pitch));
+    front.z = cos(glm::radians(g_pitch)) * sin(glm::radians(g_yaw));
+    g_camera_front = glm::normalize(front);
+
+    ::std::cout << g_yaw << "\t "<< g_pitch << ::std::endl;
+}
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+    if (g_fov >= 1.0f && g_fov <= 45.0f)
+        g_fov -= yoffset;
+    if (g_fov <= 1.0f)
+        g_fov = 1.0f;
+    if (g_fov >= 45.0f)
+        g_fov = 45.0f;
+}
 void processInput(GLFWwindow *window) {
-    if (glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS) {
+    if (glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_KEY_SPACE) {
         glfwSetWindowShouldClose(window, true);
     }
     
@@ -304,6 +355,14 @@ int main() {
         glfwTerminate();
         return -1;
     }
+
+    // 计算窗口中心位置
+    int centerX = 800 / 2;
+    int centerY = 600 / 2;
+
+    // 设置鼠标光标位置为窗口中心
+    glfwSetCursorPos(window, centerX, centerY);
+
     glfwMakeContextCurrent(window);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -392,8 +451,7 @@ int main() {
     
     Matrix matrix;
     matrix.SetView(g_camer_pos, g_camera_front, g_camera_up);
-    matrix.SetModel(glm::vec3( 0.0f,  0.0f,  0.0f),glm::vec3(1, 0, 0), -55);
-    matrix.SetProjection(45, 800 * 1.f/ 600, 0.1, 100);
+    matrix.SetProjection(g_fov, 800 * 1.f/ 600, 0.1, 100);
 
     program.SetMatrix(matrix.model_, "model");
     program.SetMatrix(matrix.view_, "view");
@@ -412,8 +470,10 @@ int main() {
       glm::vec3(-1.3f,  1.0f, -1.5f)
     };
     
-    
-    
+    glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetScrollCallback(window, scroll_callback);
+
+
     while (!glfwWindowShouldClose(window)) {
         processInput(window);
 
@@ -423,6 +483,7 @@ int main() {
 
         program.Enable();
         matrix.SetView(g_camer_pos, g_camera_front, g_camera_up);
+        matrix.SetProjection(g_fov, 800 * 1.f / 600, 0.1, 100);
 
         texture1.Enable();
         texture2.Enable();
@@ -430,6 +491,10 @@ int main() {
         for(unsigned int i = 0; i < 10; i++)
         {
             matrix.SetModel(cubePositions[i], glm::vec3(1.0f, 0.3f, 0.5f), 20.0f * (i + 1) * (float)glfwGetTime());
+
+    
+
+
             program.SetMatrix(matrix.model_, "model");
             program.SetMatrix(matrix.view_, "view");
             program.SetMatrix(matrix.projection_, "projection");
