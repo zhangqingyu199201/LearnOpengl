@@ -69,11 +69,11 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
     if (g_fov >= 45.0f)
         g_fov = 45.0f;
 }
+
 void processInput(GLFWwindow *window) {
     if (glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_KEY_SPACE) {
         glfwSetWindowShouldClose(window, true);
     }
-    
     
     float cameraSpeed = 0.05f; // adjust accordingly
      if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
